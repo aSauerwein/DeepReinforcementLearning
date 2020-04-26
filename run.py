@@ -1,3 +1,15 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# # Deep Reinforcement Learning using AlphaZero methodology
+# 
+# Please see https://applied-data.science/blog/how-to-build-your-own-alphazero-ai-using-python-and-tensorflow.tensorflow.keras/ for further notes on the codebase
+
+# ## 1. First load the core libraries
+
+# In[ ]:
+
+
 # -*- coding: utf-8 -*-
 # %matplotlib inline
 
@@ -6,8 +18,8 @@ np.set_printoptions(suppress=True)
 
 from shutil import copyfile
 import random
-from importlib import reload
 
+from importlib import reload
 
 from tensorflow.keras.utils import plot_model
 
@@ -24,6 +36,15 @@ import initialise
 import pickle
 
 
+# ## 2. Now run this block to start the learning process
+# 
+# This block loops for ever, continually learning from new game data.
+# 
+# The current best model and memories are saved in the run folder so you can kill the process and restart from the last checkpoint.
+
+# In[ ]:
+
+
 lg.logger_main.info('=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*')
 lg.logger_main.info('=*=*=*=*=*=.      NEW LOG      =*=*=*=*=*')
 lg.logger_main.info('=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*')
@@ -32,7 +53,7 @@ env = Game()
 
 # If loading an existing neural network, copy the config file to root
 if initialise.INITIAL_RUN_NUMBER != None:
-    copyfile(run_archive_folder  + env.name + '/run' + str(initialise.INITIAL_RUN_NUMBER).zfill(4) + '/config.py', './config.py')
+    copyfile(run_archive_folder + env.name + '/run' + str(initialise.INITIAL_RUN_NUMBER).zfill(4) + '/config.py', './config.py')
 
 import config
 
@@ -101,7 +122,7 @@ while 1:
         print('')
 
         if iteration % 5 == 0:
-            pickle.dump( memory, open( run_folder + "memory/memory" + str(iteration).zfill(4) + ".p", "wb" ) )
+            pickle.dump( memory, open( run_folder + "memory/memory" + iteration + ".p", "wb" ) )
 
         lg.logger_memory.info('====================')
         lg.logger_memory.info('NEW MEMORIES')
@@ -142,3 +163,55 @@ while 1:
 
     else:
         print('MEMORY SIZE: ' + str(len(memory.ltmemory)))
+
+
+# ## The following panels are not involved in the learning process
+# 
+# ### Play matches between versions (use -1 for human player)
+
+# In[ ]:
+
+
+from game import Game
+from funcs import playMatchesBetweenVersions
+import loggers as lg
+
+env = Game()
+playMatchesBetweenVersions(env, 1, 1, 1, 10, lg.logger_tourney, 0)
+
+
+# ### Pass a particular game state through the neural network (setup below for Connect4)
+
+# In[ ]:
+
+
+gs = GameState(np.array([
+    0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0
+]), 1)
+
+preds = current_player.get_preds(gs)
+
+print(preds)
+
+
+# ### See the layers of the current neural network
+
+# In[ ]:
+
+
+current_player.model.viewLayers()
+
+
+# ### Output a diagram of the neural network architecture
+
+# In[ ]:
+
+
+from tensorflow.keras.utils import plot_model
+plot_model(current_NN.model, to_file=run_folder + 'models/model.png', show_shapes = True)
+
